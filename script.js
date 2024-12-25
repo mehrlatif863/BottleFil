@@ -1,4 +1,3 @@
-// script.js
 const canvas = document.getElementById("gameCanvas");
 const ctx = canvas.getContext("2d");
 canvas.width = 800;
@@ -10,48 +9,54 @@ const customizeButton = document.getElementById("customizeGame");
 const gameNameInput = document.getElementById("gameName");
 
 let score = 0;
-let bottles = [];
+let items = [];
 let levels = 1;
 
-// Bottle class
-class Bottle {
-    constructor(x, y, width, height, color) {
+// Item class for clothing
+class Item {
+    constructor(x, y, width, height, color, type) {
         this.x = x;
         this.y = y;
         this.width = width;
         this.height = height;
         this.color = color;
-        this.isFilled = false;
+        this.type = type;
+        this.isSelected = false;
     }
 
     draw() {
         ctx.fillStyle = this.color;
         ctx.fillRect(this.x, this.y, this.width, this.height);
-        if (this.isFilled) {
-            ctx.fillStyle = "rgba(255, 255, 255, 0.6)";
-            ctx.fillRect(this.x, this.y, this.width, this.height);
+        if (this.isSelected) {
+            ctx.strokeStyle = "black";
+            ctx.lineWidth = 3;
+            ctx.strokeRect(this.x, this.y, this.width, this.height);
         }
     }
 }
 
 function initializeGame() {
-    bottles = [];
-    for (let i = 0; i < levels + 3; i++) {
+    items = [];
+    const colors = ["red", "blue", "green", "yellow", "pink", "purple"];
+    const types = ["shirt", "shoes", "blouse", "trouser"];
+    for (let i = 0; i < levels + 4; i++) {
         const x = 100 + (i * 120) % 600;
-        const y = 400;
-        const bottle = new Bottle(x, y, 80, 180, randomColor());
-        bottles.push(bottle);
+        const y = 200 + (i % 2) * 150;
+        const item = new Item(
+            x,
+            y,
+            100,
+            50,
+            colors[Math.floor(Math.random() * colors.length)],
+            types[Math.floor(Math.random() * types.length)]
+        );
+        items.push(item);
     }
-}
-
-function randomColor() {
-    const colors = ["red", "blue", "green", "yellow", "purple", "orange"];
-    return colors[Math.floor(Math.random() * colors.length)];
 }
 
 function drawGame() {
     ctx.clearRect(0, 0, canvas.width, canvas.height);
-    bottles.forEach(bottle => bottle.draw());
+    items.forEach(item => item.draw());
 }
 
 function handleCanvasClick(event) {
@@ -59,15 +64,15 @@ function handleCanvasClick(event) {
     const x = event.clientX - rect.left;
     const y = event.clientY - rect.top;
 
-    bottles.forEach(bottle => {
+    items.forEach(item => {
         if (
-            x > bottle.x &&
-            x < bottle.x + bottle.width &&
-            y > bottle.y &&
-            y < bottle.y + bottle.height
+            x > item.x &&
+            x < item.x + item.width &&
+            y > item.y &&
+            y < item.y + item.height
         ) {
-            if (!bottle.isFilled) {
-                bottle.isFilled = true;
+            if (!item.isSelected) {
+                item.isSelected = true;
                 score += 10;
                 checkLevelComplete();
             }
@@ -76,7 +81,7 @@ function handleCanvasClick(event) {
 }
 
 function checkLevelComplete() {
-    if (bottles.every(bottle => bottle.isFilled)) {
+    if (items.every(item => item.isSelected)) {
         levels++;
         initializeGame();
     }
